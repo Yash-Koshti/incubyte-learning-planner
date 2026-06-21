@@ -99,8 +99,8 @@ Goal: Understand what Temporal is, run a dev server, and execute your first work
 
 ## Module 10: Activities & Workflows In Depth
 Goal: Design robust activities and workflows with proper timeouts, retries, and lifecycle control
-- [ ] Step 10.1: Activity design — input/output with dataclasses, what belongs in an activity
-- [ ] Step 10.2: Timeouts — `start_to_close_timeout` vs `schedule_to_close_timeout`
+- [x] Step 10.1: Activity design — input/output with dataclasses, what belongs in an activity
+- [x] Step 10.2: Timeouts — `start_to_close_timeout` vs `schedule_to_close_timeout`
 - [ ] Step 10.3: RetryPolicy — configuring retries, backoff, and non-retryable errors
 - [ ] Step 10.4: Handling activity failures in workflows (`try/except ActivityError`)
 - [ ] Step 10.5: Workflow signals — `@workflow.signal` for mutating workflow state
