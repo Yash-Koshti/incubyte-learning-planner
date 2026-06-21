@@ -1,7 +1,7 @@
 # Document Processing Service — Curriculum
 
 ## Tech Stack
-FastAPI + PostgreSQL + SQLAlchemy + Alembic + Docker + pytest
+FastAPI + PostgreSQL + SQLAlchemy + Alembic + Docker + pytest + Temporal
 
 ## Skill Level
 Intermediate
@@ -83,3 +83,48 @@ Goal: pytest suite covering happy path, validation, and error cases — 80%+ cov
 - [x] Step 8.4: Tests for validation failures and error cases
 - [x] Step 8.5: Unit tests for services and processing engine
 - [x] Step 8.6: Measure coverage and close gaps
+
+---
+
+## Module 9: Temporal Fundamentals & Local Setup
+Goal: Understand what Temporal is, run a dev server, and execute your first workflow end-to-end
+- [x] Step 9.1: Mental model — Event History, replay, and why Temporal beats BackgroundTasks
+- [x] Step 9.2: Temporal architecture — Server, Worker, Client, Task Queue
+- [x] Step 9.3: Install Temporal CLI and start the dev server
+- [x] Step 9.4: Add `temporalio` to the project with `uv`
+- [x] Step 9.5: Write first activity and workflow ("Hello Temporal")
+- [x] Step 9.6: Run the worker and trigger the workflow — see it complete
+
+---
+
+## Module 10: Activities & Workflows In Depth
+Goal: Design robust activities and workflows with proper timeouts, retries, and lifecycle control
+- [ ] Step 10.1: Activity design — input/output with dataclasses, what belongs in an activity
+- [ ] Step 10.2: Timeouts — `start_to_close_timeout` vs `schedule_to_close_timeout`
+- [ ] Step 10.3: RetryPolicy — configuring retries, backoff, and non-retryable errors
+- [ ] Step 10.4: Handling activity failures in workflows (`try/except ActivityError`)
+- [ ] Step 10.5: Workflow signals — `@workflow.signal` for mutating workflow state
+- [ ] Step 10.6: Workflow queries — `@workflow.query` for reading state without side effects
+- [ ] Step 10.7: The Python sandbox — determinism rules and the `imports_passed_through` gotcha
+
+---
+
+## Module 11: Testing Temporal Code
+Goal: Write reliable tests for activities and workflows without a production Temporal server
+- [ ] Step 11.1: Testing activities in isolation with `ActivityEnvironment`
+- [ ] Step 11.2: Testing workflows with `WorkflowEnvironment` (time-skipping test server)
+- [ ] Step 11.3: Mocking activities for workflow tests
+- [ ] Step 11.4: Simulating activity failures and verifying workflow error handling
+
+---
+
+## Module 12: FastAPI Integration
+Goal: Replace BackgroundTasks + run_job with a durable Temporal workflow
+- [ ] Step 12.1: Architecture design — what changes, what stays (new ADR)
+- [ ] Step 12.2: Design the Document Processing Workflow and its four activities
+- [ ] Step 12.3: Create the Temporal worker module
+- [ ] Step 12.4: Connect a Temporal client to FastAPI via lifespan
+- [ ] Step 12.5: Start a workflow from `POST /documents/{id}/process`
+- [ ] Step 12.6: Query workflow status for `GET /jobs/{job_id}`
+- [ ] Step 12.7: Add Temporal server to `docker-compose.yml`
+- [ ] Step 12.8: End-to-end test — upload a document, start a job, poll for completion
