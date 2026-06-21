@@ -8,16 +8,15 @@ from app.core.errors import (
 )
 from app.models.processing_job import JobStatus, ProcessingJob
 from app.models.processing_result import ProcessingResult
-from app.repositories.document_repository import DocumentRepository
-from app.repositories.job_repository import JobRepository
+from app.repositories.interfaces import IDocumentRepository, IJobRepository
 from app.schemas.processing_job import VALID_OPERATIONS
 
 
 class ProcessingService:
     def __init__(
         self,
-        job_repository: JobRepository,
-        document_repository: DocumentRepository,
+        job_repository: IJobRepository,
+        document_repository: IDocumentRepository,
     ) -> None:
         self.job_repository = job_repository
         self.document_repository = document_repository

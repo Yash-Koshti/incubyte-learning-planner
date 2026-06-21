@@ -6,13 +6,13 @@ from app.core.errors import (
     UnsupportedFileTypeError,
 )
 from app.models.document import Document, DocumentStatus
-from app.repositories.document_repository import DocumentRepository
+from app.repositories.interfaces import IDocumentRepository
 
 ALLOWED_EXTENSIONS = {".pdf", ".txt", ".docx", ".png", ".jpg"}
 
 
 class DocumentService:
-    def __init__(self, repository: DocumentRepository) -> None:
+    def __init__(self, repository: IDocumentRepository) -> None:
         self.repository = repository
 
     async def upload(

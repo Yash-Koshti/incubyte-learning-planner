@@ -1,5 +1,4 @@
 import uuid
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from app.core.errors import (
@@ -7,16 +6,15 @@ from app.core.errors import (
     InvalidTitleError,
     UnsupportedFileTypeError,
 )
+from app.models.document import DocumentStatus
 from app.services.document_service import DocumentService
 
+from tests.fakes.fake_document_repository import FakeDocumentRepository
 
-def make_service():
-    repository = MagicMock()
-    repository.create = AsyncMock()
-    repository.get_by_id = AsyncMock()
-    repository.list = AsyncMock()
-    repository.delete = AsyncMock()
-    return DocumentService(repository), repository
+
+def make_service() -> tuple[DocumentService, FakeDocumentRepository]:
+    repo = FakeDocumentRepository()
+    return DocumentService(repo), repo
 
 
 async def test_upload_rejects_unsupported_extension():
@@ -32,44 +30,43 @@ async def test_upload_rejects_whitespace_title():
 
 
 async def test_upload_accepts_valid_extensions():
-    service, repo = make_service()
+    service, _ = make_service()
     for ext in ["pdf", "txt", "docx", "png", "jpg"]:
-        repo.create.reset_mock()
-        await service.upload(f"file.{ext}", None, None)
-        repo.create.assert_awaited_once()
+        doc = await service.upload(f"file.{ext}", None, None)
+        assert doc.filename == f"file.{ext}"
 
 
-async def test_upload_calls_repository_with_correct_args():
+async def test_upload_stores_document_with_correct_fields():
     service, repo = make_service()
-    await service.upload("report.pdf", "Q4 Report", "Annual")
-    repo.create.assert_awaited_once_with("report.pdf", "Q4 Report", "Annual")
+    doc = await service.upload("report.pdf", "Q4 Report", "Annual summary")
+    assert doc.filename == "report.pdf"
+    assert doc.title == "Q4 Report"
+    assert doc.description == "Annual summary"
+    assert doc.status == DocumentStatus.uploaded
+    assert await repo.get_by_id(doc.id) is doc
 
 
 async def test_get_raises_not_found_when_missing():
-    service, repo = make_service()
-    repo.get_by_id.return_value = None
+    service, _ = make_service()
     with pytest.raises(DocumentNotFoundError):
         await service.get(uuid.uuid4())
 
 
 async def test_get_returns_document_when_found():
-    service, repo = make_service()
-    fake_doc = MagicMock()
-    repo.get_by_id.return_value = fake_doc
-    result = await service.get(uuid.uuid4())
-    assert result is fake_doc
+    service, _ = make_service()
+    created = await service.upload("report.pdf", None, None)
+    fetched = await service.get(created.id)
+    assert fetched is created
 
 
 async def test_delete_raises_not_found_when_missing():
-    service, repo = make_service()
-    repo.get_by_id.return_value = None
+    service, _ = make_service()
     with pytest.raises(DocumentNotFoundError):
         await service.delete(uuid.uuid4())
 
 
-async def test_delete_calls_repository():
+async def test_delete_removes_document_from_store():
     service, repo = make_service()
-    fake_doc = MagicMock()
-    repo.get_by_id.return_value = fake_doc
-    await service.delete(uuid.uuid4())
-    repo.delete.assert_awaited_once_with(fake_doc)
+    doc = await service.upload("report.pdf", None, None)
+    await service.delete(doc.id)
+    assert await repo.get_by_id(doc.id) is None
