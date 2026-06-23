@@ -114,7 +114,7 @@ Goal: Write reliable tests for activities and workflows without a production Tem
 - [x] Step 11.1: Testing activities in isolation with `ActivityEnvironment`
 - [x] Step 11.2: Testing workflows with `WorkflowEnvironment` (time-skipping test server)
 - [x] Step 11.3: Mocking activities for workflow tests
-- [ ] Step 11.4: Simulating activity failures and verifying workflow error handling
+- [x] Step 11.4: Simulating activity failures and verifying workflow error handling
 
 ---
 
