@@ -101,11 +101,11 @@ Goal: Understand what Temporal is, run a dev server, and execute your first work
 Goal: Design robust activities and workflows with proper timeouts, retries, and lifecycle control
 - [x] Step 10.1: Activity design — input/output with dataclasses, what belongs in an activity
 - [x] Step 10.2: Timeouts — `start_to_close_timeout` vs `schedule_to_close_timeout`
-- [ ] Step 10.3: RetryPolicy — configuring retries, backoff, and non-retryable errors
-- [ ] Step 10.4: Handling activity failures in workflows (`try/except ActivityError`)
-- [ ] Step 10.5: Workflow signals — `@workflow.signal` for mutating workflow state
-- [ ] Step 10.6: Workflow queries — `@workflow.query` for reading state without side effects
-- [ ] Step 10.7: The Python sandbox — determinism rules and the `imports_passed_through` gotcha
+- [x] Step 10.3: RetryPolicy — configuring retries, backoff, and non-retryable errors
+- [x] Step 10.4: Handling activity failures in workflows (`try/except ActivityError`)
+- [x] Step 10.5: Workflow signals — `@workflow.signal` for mutating workflow state
+- [x] Step 10.6: Workflow queries — `@workflow.query` for reading state without side effects
+- [x] Step 10.7: The Python sandbox — determinism rules and the `imports_passed_through` gotcha
 
 ---
 
