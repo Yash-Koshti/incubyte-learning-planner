@@ -1,15 +1,18 @@
 import uuid
 
-from fastapi import APIRouter, BackgroundTasks, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, status
+from temporalio.client import Client
 
 from app.dependencies.services import get_processing_service
+from app.dependencies.temporal import get_temporal_client
 from app.schemas.processing_job import (
     CreateJobRequest,
     JobResponse,
     ProcessingResultResponse,
 )
-from app.services.processing_engine import run_job
 from app.services.processing_service import ProcessingService
+from app.temporal.worker import TASK_QUEUE
+from app.temporal.workflows import DocumentProcessingWorkflow, ProcessDocumentInput
 
 router = APIRouter(tags=["jobs"])
 
@@ -41,12 +44,20 @@ async def create_processing_job(
             }
         ]
     ),
-    background_tasks: BackgroundTasks = BackgroundTasks(),
     service: ProcessingService = Depends(get_processing_service),
+    temporal_client: Client = Depends(get_temporal_client),
 ) -> JobResponse:
     job = await service.create_job(document_id, request.operations)
 
-    background_tasks.add_task(run_job, job.id, document_id, request.operations)
+    await temporal_client.start_workflow(
+        DocumentProcessingWorkflow.run,
+        ProcessDocumentInput(
+            document_id=str(document_id),
+            operations=request.operations,
+        ),
+        id=f"doc-processing-{job.id}",
+        task_queue=TASK_QUEUE,
+    )
 
     return JobResponse(
         job_id=job.id,

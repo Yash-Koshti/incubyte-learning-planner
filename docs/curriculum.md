@@ -124,7 +124,7 @@ Goal: Replace BackgroundTasks + run_job with a durable Temporal workflow
 - [x] Step 12.2: Design the Document Processing Workflow and its four activities
 - [x] Step 12.3: Create the Temporal worker module
 - [x] Step 12.4: Connect a Temporal client to FastAPI via lifespan
-- [ ] Step 12.5: Start a workflow from `POST /documents/{id}/process`
+- [x] Step 12.5: Start a workflow from `POST /documents/{id}/process`
 - [ ] Step 12.6: Query workflow status for `GET /jobs/{job_id}`
 - [ ] Step 12.7: Add Temporal server to `docker-compose.yml`
 - [ ] Step 12.8: End-to-end test — upload a document, start a job, poll for completion
