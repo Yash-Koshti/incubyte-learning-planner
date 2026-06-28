@@ -122,7 +122,7 @@ Goal: Write reliable tests for activities and workflows without a production Tem
 Goal: Replace BackgroundTasks + run_job with a durable Temporal workflow
 - [x] Step 12.1: Architecture design — what changes, what stays (new ADR)
 - [x] Step 12.2: Design the Document Processing Workflow and its four activities
-- [ ] Step 12.3: Create the Temporal worker module
+- [x] Step 12.3: Create the Temporal worker module
 - [ ] Step 12.4: Connect a Temporal client to FastAPI via lifespan
 - [ ] Step 12.5: Start a workflow from `POST /documents/{id}/process`
 - [ ] Step 12.6: Query workflow status for `GET /jobs/{job_id}`
