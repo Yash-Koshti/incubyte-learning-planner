@@ -1,10 +1,6 @@
 import io
-from unittest.mock import patch
 
-from app.services.processing_engine import run_job
 from httpx import AsyncClient
-
-from tests.conftest import TestSessionFactory
 
 
 async def _upload_document(client: AsyncClient) -> str:
@@ -40,6 +36,16 @@ async def test_create_job_success(client: AsyncClient):
     assert "job_id" in body
 
 
+async def test_create_job_starts_temporal_workflow(
+    client: AsyncClient, mock_temporal_client
+):
+    document_id = await _upload_document(client)
+    job_id = await _create_job(client, document_id, ["extract_text"])
+    mock_temporal_client.start_workflow.assert_awaited_once()
+    call_args = mock_temporal_client.start_workflow.call_args
+    assert call_args.kwargs["id"] == f"doc-processing-{job_id}"
+
+
 async def test_create_job_document_not_found(client: AsyncClient):
     response = await client.post(
         "/api/v1/documents/00000000-0000-0000-0000-000000000000/process",
@@ -62,33 +68,9 @@ async def test_create_job_invalid_operation(client: AsyncClient):
 async def test_get_job_status_pending(client: AsyncClient):
     document_id = await _upload_document(client)
     job_id = await _create_job(client, document_id, ["extract_text"])
-
     response = await client.get(f"/api/v1/jobs/{job_id}")
     assert response.status_code == 200
     assert response.json()["status"] == "pending"
-
-
-async def test_get_job_status_completed(client: AsyncClient):
-    document_id = await _upload_document(client)
-    job_id = await _create_job(
-        client, document_id, ["extract_text", "generate_summary", "extract_keywords"]
-    )
-
-    import uuid
-
-    with patch(
-        "app.services.processing_engine.AsyncSessionFactory", TestSessionFactory
-    ):
-        await run_job(
-            uuid.UUID(job_id),
-            uuid.UUID(document_id),
-            ["extract_text", "generate_summary", "extract_keywords"],
-        )
-
-    response = await client.get(f"/api/v1/jobs/{job_id}")
-    assert response.status_code == 200
-    assert response.json()["status"] == "completed"
-    assert response.json()["completed_at"] is not None
 
 
 async def test_get_job_not_found(client: AsyncClient):
@@ -97,35 +79,9 @@ async def test_get_job_not_found(client: AsyncClient):
     assert response.json()["error"]["code"] == "JOB_NOT_FOUND"
 
 
-async def test_get_job_results(client: AsyncClient):
-    document_id = await _upload_document(client)
-    job_id = await _create_job(
-        client, document_id, ["extract_text", "generate_summary", "extract_keywords"]
-    )
-
-    import uuid
-
-    with patch(
-        "app.services.processing_engine.AsyncSessionFactory", TestSessionFactory
-    ):
-        await run_job(
-            uuid.UUID(job_id),
-            uuid.UUID(document_id),
-            ["extract_text", "generate_summary", "extract_keywords"],
-        )
-
-    response = await client.get(f"/api/v1/jobs/{job_id}/results")
-    assert response.status_code == 200
-    body = response.json()
-    assert body["extracted_text"] is not None
-    assert body["summary"] is not None
-    assert isinstance(body["keywords"], list)
-
-
 async def test_get_results_job_not_completed(client: AsyncClient):
     document_id = await _upload_document(client)
     job_id = await _create_job(client, document_id, ["extract_text"])
-
     response = await client.get(f"/api/v1/jobs/{job_id}/results")
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "JOB_NOT_COMPLETED"

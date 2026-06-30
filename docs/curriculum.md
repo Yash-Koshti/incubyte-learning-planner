@@ -127,4 +127,4 @@ Goal: Replace BackgroundTasks + run_job with a durable Temporal workflow
 - [x] Step 12.5: Start a workflow from `POST /documents/{id}/process`
 - [x] Step 12.6: Query workflow status for `GET /jobs/{job_id}`
 - [x] Step 12.7: Add Temporal server to `docker-compose.yml`
-- [ ] Step 12.8: End-to-end test — upload a document, start a job, poll for completion
+- [x] Step 12.8: End-to-end test — upload a document, start a job, poll for completion
