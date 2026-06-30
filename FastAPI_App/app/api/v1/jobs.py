@@ -52,6 +52,7 @@ async def create_processing_job(
     await temporal_client.start_workflow(
         DocumentProcessingWorkflow.run,
         ProcessDocumentInput(
+            job_id=str(job.id),
             document_id=str(document_id),
             operations=request.operations,
         ),
