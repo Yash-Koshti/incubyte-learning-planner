@@ -14,27 +14,25 @@ A FastAPI microservice for uploading documents and running async processing jobs
 # 1. Copy the environment template
 cp .env.example .env
 
-# 2. Start PostgreSQL
-docker compose up -d db
-
-# 3. Install dependencies
+# 2. Install dependencies (needed to run tests locally)
 uv sync
 
-# 4. Run migrations
-uv run alembic upgrade head
-
-# 5. Start the app
-docker compose up app
+# 3. Start the app
+docker compose up -d
 ```
 
 The API is available at `http://localhost:8000`.  
 Interactive docs: `http://localhost:8000/docs`
 
+> **How migrations work:** `scripts/migrate_and_start.sh` runs automatically when any container starts. It creates `docprocessor_test` if it does not exist, applies Alembic migrations to both the main and test databases, then hands off to the app or worker process. You never need to run migrations manually.
+
 ## Environment Variables
 
-| Variable       | Default                                                              | Description          |
-| -------------- | -------------------------------------------------------------------- | -------------------- |
-| `DATABASE_URL` | `postgresql+asyncpg://postgres:postgres@localhost:5432/docprocessor` | Async PostgreSQL URL |
+| Variable            | Default / Example                                                         | Description                          |
+| ------------------- | ------------------------------------------------------------------------- | ------------------------------------ |
+| `DATABASE_URL`      | `postgresql+asyncpg://postgres:postgres@localhost:5432/docprocessor`      | Main application database            |
+| `TEST_DATABASE_URL` | `postgresql+asyncpg://postgres:postgres@localhost:5432/docprocessor_test` | Separate database used by test suite |
+| `TEMPORAL_HOST`     | `localhost:7233`                                                          | Address of the Temporal server       |
 
 ## Running Tests
 
@@ -46,19 +44,15 @@ Tests are split into two categories:
 uv run pytest tests/unit
 ```
 
-These test service logic in isolation using in-memory fake repositories.
+These test service logic in isolation using in-memory fake repositories. No database or Docker required.
 
 ### Integration tests
 
-```bash
-# Ensure the test DB exists first
-docker compose up -d db
-uv run alembic upgrade head
+`docker compose up -d` sets up everything — including `docprocessor_test`. Once the containers are running, just run:
 
+```bash
 uv run pytest tests/test_documents.py tests/test_jobs.py tests/test_validation.py
 ```
-
-These test the full HTTP stack against a real `docprocessor_test` database.
 
 ### All tests with coverage
 
@@ -76,6 +70,8 @@ app/
   repositories/    # Data access layer (interfaces + implementations)
   schemas/         # Pydantic request/response schemas
   services/        # Business logic
+scripts/
+  migrate_and_start.sh  # Creates both DBs, runs all migrations, then starts the process
 tests/
   fakes/           # In-memory repository implementations for unit tests
   unit/            # Service-level unit tests (no DB)
