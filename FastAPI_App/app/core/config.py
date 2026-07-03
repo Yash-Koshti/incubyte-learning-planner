@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+asyncpg://postgres:postgres@localhost:5432/docprocessor"
     )
+    test_database_url: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/docprocessor_test"
+    )
     temporal_host: str = "localhost:7233"
 
 
