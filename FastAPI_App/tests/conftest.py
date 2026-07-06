@@ -1,3 +1,7 @@
+from unittest.mock import AsyncMock, MagicMock
+
+import app.dependencies.temporal as temporal_module
+import pytest
 import pytest_asyncio
 from app.core.config import settings
 from app.core.database import Base
@@ -7,7 +11,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-TEST_DATABASE_URL = settings.database_url.replace("/docprocessor", "/docprocessor_test")
+TEST_DATABASE_URL = settings.test_database_url
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
 TestSessionFactory = async_sessionmaker(
@@ -30,6 +34,14 @@ async def clean_tables(db_session: AsyncSession):
     for table in reversed(Base.metadata.sorted_tables):
         await db_session.execute(table.delete())
     await db_session.commit()
+
+
+@pytest.fixture(autouse=True)
+def mock_temporal_client(monkeypatch):
+    mock_client = MagicMock()
+    mock_client.start_workflow = AsyncMock()
+    monkeypatch.setattr(temporal_module, "_temporal_client", mock_client)
+    return mock_client
 
 
 @pytest_asyncio.fixture

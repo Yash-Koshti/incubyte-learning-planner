@@ -1,24 +1,67 @@
 services:
-    app:
-      build: .
-      ports:
-        - "8000:8000"
-      environment:
-        DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/docprocessor
-      depends_on:
-        db:
-          condition: service_healthy
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/docprocessor
+      TEMPORAL_HOST: temporal:7233
+    depends_on:
+      db:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    restart: on-failure
 
-    db:
-      image: postgres:16-alpine
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: docprocessor
-      ports:
-        - "5432:5432"
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U postgres"]
-        interval: 5s
-        timeout: 5s
-        retries: 5
+  worker:
+    build: .
+    command: python -m app.temporal.worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/docprocessor
+      TEMPORAL_HOST: temporal:7233
+    depends_on:
+      db:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    restart: on-failure
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: docprocessor
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PWD: postgres
+      POSTGRES_SEEDS: db
+      DEFAULT_NAMESPACE: default
+      DEFAULT_NAMESPACE_RETENTION: 1d
+    ports:
+      - "7233:7233"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:8233
+    ports:
+      - "8233:8080"
+    depends_on:
+      - temporal

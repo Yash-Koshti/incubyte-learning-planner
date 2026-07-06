@@ -12,6 +12,7 @@ dependencies = [
     "python-json-logger>=4.1.0",
     "python-multipart>=0.0.32",
     "sqlalchemy[asyncio]>=2.0.50",
+    "temporalio>=1.29.0",
     "uvicorn[standard]>=0.49.0",
 ]
 
